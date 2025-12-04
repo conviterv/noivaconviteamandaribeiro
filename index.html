@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Convite de Casamento | Ronaldo & Vitória</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Great+Vibes&family=Lato:wght@300;400;700&family=Pinyon+Script&display=swap" rel="stylesheet">
+    
+    <!-- GSAP for Animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gold-wedding': '#C5A059',
+                        'gold-light': '#E6C685',
+                        'deep-green': '#1A2F23',
+                        'soft-white': '#F9F9F9',
+                        'overlay-dark': 'rgba(0, 0, 0, 0.65)'
+                    },
+                    fontFamily: {
+                        'script': ['"Great Vibes"', 'cursive'],
+                        'elegant': ['"Pinyon Script"', 'cursive'],
+                        'serif': ['"Cinzel"', 'serif'],
+                        'body': ['"Lato"', 'sans-serif'],
+                    },
+                    backgroundImage: {
+                        'paper-texture': "url('https://www.transparenttextures.com/patterns/cream-paper.png')",
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Estilos Personalizados e Fixes */
+        body {
+            overflow: hidden; /* Previne scroll nativo para controlar a experiência */
+            background-color: #1a1a1a;
+        }
+
+        .page-bg {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: transform 10s ease-out;
+        }
+        
+        /* Animação suave de zoom no fundo */
+        .active-slide .page-bg {
+            transform: scale(1.05);
+        }
+
+        /* Ocultar scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Envelope Styles */
+        .envelope-container {
+            perspective: 1500px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+        }
+
+        .wax-seal {
+            background: radial-gradient(circle at 30% 30%, #d4af37, #aa8526);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 0 10px rgba(255,255,255,0.4);
+            border: 2px solid #8a6a1c;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .wax-seal:active {
+            transform: scale(0.95);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .text-shadow-sm {
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen text-soft-white font-body antialiased">
+
+    <!-- CAMADA DO ENVELOPE (Abertura) -->
+    <div id="envelope-layer" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-900 transition-all duration-1000">
+        <div class="envelope-container relative w-full max-w-md h-auto p-6 flex flex-col items-center">
+            
+            <div id="envelope-flap-top" class="w-full max-w-[320px] bg-[#F5F5F0] h-64 rounded-t-lg shadow-2xl relative flex items-end justify-center overflow-hidden origin-top z-20 border-b border-gray-300">
+                <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]"></div>
+                <p class="mb-4 text-gold-wedding font-serif tracking-widest text-xs uppercase">Toque no selo para abrir</p>
+            </div>
+            
+            <!-- Conteúdo do "Verso" do envelope -->
+            <div id="envelope-body" class="w-full max-w-[320px] bg-[#EAEaea] h-48 -mt-1 rounded-b-lg shadow-xl relative z-10 flex items-center justify-center">
+                 <div class="text-center">
+                    <h2 class="text-3xl font-script text-gray-500">R & V</h2>
+                 </div>
+            </div>
+
+            <!-- Selo de Cera -->
+            <div id="wax-seal" class="wax-seal absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full flex items-center justify-center z-30 group" onclick="openEnvelope()">
+                <span class="font-serif text-2xl font-bold text-[#5c4613] group-hover:text-[#3d2e0c]">R&V</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL (SLIDES) -->
+    <main id="main-content" class="fixed inset-0 z-0 opacity-0 transition-opacity duration-1000 hidden">
+        
+        <!-- Navegação / Indicadores -->
+        <div class="fixed bottom-8 left-0 right-0 z-50 flex justify-center space-x-2">
+            <button onclick="goToSlide(0)" class="nav-dot w-2 h-2 rounded-full bg-white opacity-50 transition-all duration-300"></button>
+            <button onclick="goToSlide(1)" class="nav-dot w-2 h-2 rounded-full bg-white opacity-50 transition-all duration-300"></button>
+            <button onclick="goToSlide(2)" class="nav-dot w-2 h-2 rounded-full bg-white opacity-50 transition-all duration-300"></button>
+            <button onclick="goToSlide(3)" class="nav-dot w-2 h-2 rounded-full bg-white opacity-50 transition-all duration-300"></button>
+        </div>
+
+        <!-- SETAS DE NAVEGAÇÃO (Desktop/Tablet e Mobile friendly) -->
+        <button onclick="prevSlide()" class="fixed left-2 top-1/2 transform -translate-y-1/2 z-40 p-2 text-white opacity-30 hover:opacity-100 transition-opacity">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+        </button>
+        <button onclick="nextSlide()" id="btn-next" class="fixed right-2 top-1/2 transform -translate-y-1/2 z-40 p-2 text-white opacity-60 hover:opacity-100 transition-opacity animate-pulse">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+        </button>
+
+
+        <!-- PÁGINA 1: Capa / Anúncio -->
+        <section class="slide absolute inset-0 w-full h-full flex flex-col justify-center items-center text-center px-6 invisible opacity-0 transition-all duration-700">
+            <!-- Background Image -->
+            <div class="absolute inset-0 z-[-1]">
+                <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 z-10"></div>
+                <div class="page-bg w-full h-full" style="background-image: url('https://lh3.googleusercontent.com/pw/AP1GczPash460JHdgFheTukC1EfUOSuFrx0BDPoFoKQSJ8hPZQQneL5lF1oRanz8jN8S9RSi9SFc0WqcaKhlN4XisNKGJp0heTMrs_v5y2r66P-f-XyNk0NBZQPKkH3msdEcpQD7O-7l0LwFQJVZovJYFnSMUQ=w899-h599-s-no-gm?authuser=0');"></div>
+            </div>
+
+            <div class="content-wrapper glass-card p-6 rounded-xl border border-white/20 max-w-sm w-full">
+                <p class="text-sm uppercase tracking-[0.3em] mb-4 font-serif text-gold-light fade-in-up">Vamos nos Casar</p>
+                
+                <h1 class="text-5xl md:text-6xl font-elegant text-gold-wedding mb-6 fade-in-up delay-100">
+                    Ronaldo <br> <span class="text-3xl">&</span> <br> Vitória
+                </h1>
+
+                <div class="w-16 h-[1px] bg-gold-wedding mx-auto my-6 fade-in-up delay-200"></div>
+
+                <p class="text-lg font-serif italic leading-relaxed text-gray-100 fade-in-up delay-300 text-shadow-sm">
+                    "Assim, eles já não são dois, mas sim uma só carne. Portanto, o que Deus uniu, ninguém o separe."
+                </p>
+                <p class="text-xs mt-2 uppercase tracking-widest fade-in-up delay-300 text-gold-light">— Mateus 19:6</p>
+            </div>
+        </section>
+
+
+        <!-- PÁGINA 2: Os Noivos e Pais -->
+        <section class="slide absolute inset-0 w-full h-full flex flex-col justify-end pb-24 items-center text-center px-4 invisible opacity-0 transition-all duration-700">
+            <!-- Background Image -->
+            <div class="absolute inset-0 z-[-1]">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10"></div>
+                <div class="page-bg w-full h-full" style="background-image: url('https://lh3.googleusercontent.com/pw/AP1GczPj8_WY4hXLvSUFYEOLyr3VYkXTWGE61Mn7ADWfiDlZgI0dxVYi9HS2F-Cvannf6kppKcGmhNV2jE3gDS0KV9A0DwEHZibNwAq217_xfxKCrwYaikMqdjJjOe4ISaviR9gCgYpZYsJa1xMnX4QAaNfyTw=w576-h381-s-no-gm?authuser=0');"></div>
+            </div>
+
+            <div class="content-wrapper w-full max-w-md mb-4">
+                <div class="glass-card p-6 rounded-xl border-t border-white/10">
+                    <div class="mb-6 fade-in-up">
+                        <h2 class="text-3xl font-elegant text-gold-wedding mb-2">Ronaldo Barros de Araújo</h2>
+                        <span class="text-xl font-script text-white">&</span>
+                        <h2 class="text-3xl font-elegant text-gold-wedding mt-2">Vitória Barbosa de Araújo</h2>
+                    </div>
+
+                    <p class="text-sm font-body text-gray-300 mb-4 fade-in-up delay-100">
+                        Com a benção de seus pais
+                    </p>
+
+                    <div class="grid grid-cols-1 gap-4 text-sm font-serif text-gray-100 fade-in-up delay-200">
+                        <div>
+                            <p class="font-bold text-gold-light uppercase text-xs tracking-wide">Pais do Noivo</p>
+                            <p>Natividade Pereira de Araújo</p>
+                            <p>Maria Barros de Araújo</p>
+                        </div>
+                        <div class="w-10 h-[1px] bg-white/30 mx-auto"></div>
+                        <div>
+                            <p class="font-bold text-gold-light uppercase text-xs tracking-wide">Pais da Noiva</p>
+                            <p>Reilson Barbosa Santos</p>
+                            <p>Vânia Nunes de Araújo Pereira</p>
+                        </div>
+                    </div>
+
+                    <p class="mt-6 text-sm italic font-light leading-relaxed fade-in-up delay-300 text-gray-200">
+                        Temos a honra e alegria de anunciar que nossos filhos se unirão em sagrado matrimônio.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- PÁGINA 3: Convite Oficial -->
+        <section class="slide absolute inset-0 w-full h-full flex flex-col justify-center items-center text-center px-6 invisible opacity-0 transition-all duration-700">
+            <!-- Background Image -->
+            <div class="absolute inset-0 z-[-1]">
+                <div class="absolute inset-0 bg-overlay-dark z-10"></div>
+                <div class="page-bg w-full h-full" style="background-image: url('https://lh3.googleusercontent.com/pw/AP1GczMjoW2dv0L22iXkQd_zAte65H54_z5lkg2Z116H6W4O7eNkI-bnwwlwMeUpNHmxcrlfrjFeBYtAWDzPYB6AXG_6ffWk-utg5u1mPnXyuWefhq4icyzAelNiL1mA-aKZmmS794Ktfp1r9LNVIXdUKk5MrA=w576-h384-s-no-gm?authuser=0');"></div>
+            </div>
+
+            <div class="glass-card w-full max-w-md p-8 rounded-lg border border-gold-wedding/30 shadow-2xl">
+                <h3 class="font-serif text-2xl uppercase tracking-widest text-gold-wedding mb-6 fade-in-up">Convite Especial</h3>
+
+                <p class="text-base leading-relaxed mb-6 font-light fade-in-up delay-100">
+                    Nós, juntamente com nossos pais, temos a honra de convidar
+                </p>
+
+                <!-- Área do Convidado em Destaque -->
+                <div class="py-4 border-t border-b border-white/10 mb-6 fade-in-up delay-200">
+                    <span id="guest-name" class="font-elegant text-4xl text-white block">
+                        Amanda Ribeiro e Família
+                    </span>
+                </div>
+
+                <p class="text-base leading-relaxed font-light fade-in-up delay-300">
+                    Para celebrarem conosco o início da nossa vida a dois. Sua presença tornará este momento ainda mais inesquecível.
+                </p>
+            </div>
+        </section>
+
+
+        <!-- PÁGINA 4: RSVP e Informações Finais -->
+        <section class="slide absolute inset-0 w-full h-full flex flex-col justify-end items-center text-center px-4 pb-20 invisible opacity-0 transition-all duration-700">
+            <!-- Background Image -->
+            <div class="absolute inset-0 z-[-1]">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10"></div>
+                <div class="page-bg w-full h-full" style="background-image: url('https://lh3.googleusercontent.com/pw/AP1GczNNHc2ivYf6eBKr8seukwDwAIQDh8nUxf4nps07Qt_L5iYilnFVGERWOylAoKHZmOICE_-pH9eGfIk5AzkwCXPV-w0--qPcmBEvN2HznZXldjAtW52SdPjs08hnSDvpfIpQJ-wmIpott1WPgwLgTn_iDg=w400-h265-s-no-gm?authuser=0');"></div>
+            </div>
+
+            <div class="content-wrapper w-full max-w-md mb-6 fade-in-up">
+                
+                <h2 class="text-3xl font-elegant text-gold-wedding mb-4">Aceite o Convite</h2>
+                
+                <p class="text-gray-300 text-sm mb-6 leading-relaxed px-2">
+                    Para prosseguir, por favor, clique no botão abaixo para nos enviar uma mensagem. Em breve, enviaremos o <strong>Manual dos Convidados</strong> com todos os detalhes (local, horário, lista de presentes).
+                </p>
+
+                <!-- Botão WhatsApp -->
+                <a id="whatsapp-btn" href="#" target="_blank" class="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-green-900 font-serif uppercase tracking-widest rounded-full hover:bg-green-800 hover:scale-105 focus:outline-none ring-2 ring-gold-wedding ring-offset-2 ring-offset-black mb-8 shadow-lg w-full">
+                    <svg class="w-6 h-6 mr-3 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                    Aceitar Convite
+                </a>
+
+                <div class="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Nota Importante</p>
+                    <p class="text-xs text-gray-300 italic">
+                        A confirmação oficial de presença será realizada apenas após o recebimento do Manual dos Convidados.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- LOGICA DE PERSONALIZAÇÃO VIA URL ---
+        // Exemplo: ?convidado=Tio%20João%20e%20Família
+        const urlParams = new URLSearchParams(window.location.search);
+        const guestName = urlParams.get('convidado');
+        if(guestName) {
+            document.getElementById('guest-name').innerText = guestName;
+        }
+
+        // --- LÓGICA DO WHATSAPP ---
+        const message = encodeURIComponent(`Queridos Noivos,\n\nRecebemos com grande alegria e honra o convite para testemunhar esta nova aliança firmada em Deus. Agradecemos a consideração e a oportunidade de nos alegrarmos convosco. Já estamos ansiosos pelos detalhes!`);
+        // Usando link genérico para abrir o app e escolher o contato
+        document.getElementById('whatsapp-btn').href = `https://wa.me/?text=${message}`;
+
+
+        // --- ANIMAÇÃO E NAVEGAÇÃO ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.nav-dot');
+        const totalSlides = slides.length;
+        let isOpening = false;
+
+        function updateSlides() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.remove('invisible', 'opacity-0');
+                    slide.classList.add('active-slide', 'z-20');
+                    
+                    // Re-trigger CSS animations for content
+                    const elements = slide.querySelectorAll('.fade-in-up');
+                    elements.forEach(el => {
+                        el.style.animation = 'none';
+                        el.offsetHeight; /* trigger reflow */
+                        el.style.animation = null; 
+                        // Note: CSS classes handle simple fades, but adding a class 'animate' would be better.
+                        // For simplicity in this file, we rely on the transition-opacity of the section.
+                        gsap.fromTo(el, 
+                            { opacity: 0, y: 20 }, 
+                            { opacity: 1, y: 0, duration: 1, delay: 0.2, stagger: 0.1, ease: "power2.out" }
+                        );
+                    });
+
+                } else {
+                    slide.classList.add('invisible', 'opacity-0');
+                    slide.classList.remove('active-slide', 'z-20');
+                }
+            });
+
+            // Update Dots
+            dots.forEach((dot, index) => {
+                if (index === currentSlide) {
+                    dot.classList.remove('opacity-50', 'bg-white');
+                    dot.classList.add('opacity-100', 'bg-gold-wedding', 'scale-125');
+                } else {
+                    dot.classList.add('opacity-50', 'bg-white');
+                    dot.classList.remove('opacity-100', 'bg-gold-wedding', 'scale-125');
+                }
+            });
+
+            // Visibilidade do botão NEXT
+            const nextBtn = document.getElementById('btn-next');
+            if(currentSlide === totalSlides - 1) {
+                nextBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'block';
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlides();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlides();
+            }
+        }
+
+        function goToSlide(n) {
+            currentSlide = n;
+            updateSlides();
+        }
+
+        // --- ABRIR ENVELOPE ---
+        function openEnvelope() {
+            if(isOpening) return;
+            isOpening = true;
+
+            const tl = gsap.timeline();
+
+            // 1. Zoom no selo e fade out
+            tl.to('#wax-seal', { scale: 1.5, opacity: 0, duration: 0.5, ease: "power2.in" })
+            
+            // 2. Abrir a aba do envelope (rotateX)
+              .to('#envelope-flap-top', { 
+                  rotateX: 180, 
+                  duration: 0.8, 
+                  ease: "power2.inOut",
+                  transformOrigin: "top"
+              }, "-=0.2")
+              
+            // 3. Envelope desce e some, Conteúdo aparece
+              .to('#envelope-layer', { 
+                  opacity: 0, 
+                  y: 100, 
+                  duration: 0.8, 
+                  ease: "power2.in",
+                  onComplete: () => {
+                      document.getElementById('envelope-layer').style.display = 'none';
+                      document.getElementById('main-content').classList.remove('hidden');
+                      // Pequeno delay para suavidade antes de mostrar o slide
+                      setTimeout(() => {
+                          document.getElementById('main-content').classList.remove('opacity-0');
+                          updateSlides(); // Inicia animações do slide 0
+                      }, 100);
+                  }
+              });
+        }
+
+        // Touch Swipe Support (Simples)
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            // Se o envelope ainda estiver visível, não faz swipe
+            if(document.getElementById('envelope-layer').style.display !== 'none') return;
+
+            if (touchEndX < touchStartX - 50) nextSlide();
+            if (touchEndX > touchStartX + 50) prevSlide();
+        }
+
+    </script>
+</body>
+</html>
